@@ -49,7 +49,7 @@ builder.Services.AddAuthentication("Bearer")
                 SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["Authentication:SecretForKey"]))
         };
     });
-
+// test
 builder.Services.AddAuthorization(options => 
 {
     options.AddPolicy("AdminPolicy", policy =>
