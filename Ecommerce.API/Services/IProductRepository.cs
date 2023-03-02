@@ -7,6 +7,7 @@ namespace Ecommerce.API.Services
 	{
         Task<IEnumerable<Category>> GetCategoriesAsync();
         Task<Category?> GetCategoryAsync(int categoryId, bool includeProducts);
+        Task CreateCategoryAsync(Category category);
         Task<bool> CategoryExistsAsync(int categoryId);
         Task<Product?> GetProductAsync(int productId);
         Task AddProductToCategory(int categoryId, Product product);
@@ -14,8 +15,8 @@ namespace Ecommerce.API.Services
         Task<bool> CategoryNameMatchesCategoryId(string? categoryName,
             int categoryId);
         Task<IEnumerable<Product>> GetAllProductsAsync();
-        Task<bool> SaveChangesAsync();
         Task<IEnumerable<Product>> GetAllProductsInCategoryAsync(int categoryId);
+        Task<bool> SaveChangesAsync();
     }
 }
 

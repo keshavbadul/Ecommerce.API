@@ -9,6 +9,9 @@ namespace Ecommerce.API.Profiles
 		{
 			CreateMap<Entities.Category, Models.CategoryDto>();
 			CreateMap<Entities.Category, Models.CategoryWithoutProductsDto>();
+			CreateMap<Models.CategoryForCreationDto, Entities.Category>();
+			CreateMap<Entities.Category, Models.CategoryForUpdateDto>();
+			CreateMap<Models.CategoryForUpdateDto, Entities.Category>();
 		}
 	}
 }

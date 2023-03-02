@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace Ecommerce.API.Entities
 {
@@ -17,8 +18,10 @@ namespace Ecommerce.API.Entities
         [MaxLength(200)]
 		public string? Description { get; set; }
 
+		[Precision(18,2)]
 		public decimal SellingPrice { get; set; }
 
+		[Precision(18,2)]
 		public decimal PurchasePrice { get; set; }
 
 		public string? Image { get; set; }

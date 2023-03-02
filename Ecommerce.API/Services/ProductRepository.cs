@@ -29,6 +29,11 @@ namespace Ecommerce.API.Services
             return await _context.Categories.AnyAsync(c => c.Id == categoryId);
         }
 
+        public async Task CreateCategoryAsync(Category category)
+        {
+            await _context.Categories.AddAsync(category);
+        }
+
         public Task<bool> CategoryNameMatchesCategoryId(string? categoryName, int categoryId)
         {
             throw new NotImplementedException();

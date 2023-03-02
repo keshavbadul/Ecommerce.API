@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Ecommerce.API.Models;
 using Ecommerce.API.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-
-// For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace Ecommerce.API.Controllers
 {
@@ -34,23 +30,80 @@ namespace Ecommerce.API.Controllers
             return Ok(_mapper.Map<IEnumerable<CategoryWithoutProductsDto>>(categories));
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetCategory(int id, bool includeProducts)
-        {
-            var category = await _productRepository.GetCategoryAsync(id,
-                includeProducts);
+        // [HttpGet("{id}", Name = "GetCategory")]
+        // public async Task<IActionResult> GetCategory(int id, [FromQuery]bool includeProducts)
+        // {
+        //     var category = await _productRepository.GetCategoryAsync(id,
+        //         includeProducts);
 
-            if (category == null)
+        //     if (category == null)
+        //     {
+        //         return NotFound();
+        //     }
+
+        //     if (includeProducts)
+        //     {
+        //         return Ok(_mapper.Map<CategoryDto>(category));
+        //     }
+
+        //     return Ok(_mapper.Map<CategoryWithoutProductsDto>(category));
+        // }
+
+
+        [Authorize(Roles = "admin")]
+        [HttpPost]
+        public async Task<ActionResult<CategoryDto>> CreateCategory(CategoryForCreationDto category)
+        {
+            var categoryEntity = _mapper.Map<Entities.Category>(category);
+
+            await _productRepository.CreateCategoryAsync(categoryEntity);
+            await _productRepository.SaveChangesAsync();
+
+            var categoryToReturn = _mapper.Map<CategoryDto>(categoryEntity);
+
+            // return CreatedAtRoute("GetCategory",
+            //     new
+            //     {
+            //         id = categoryEntity.Id,
+            //         includeProducts = false
+            //     },
+            //     categoryToReturn);
+            
+            return Ok();
+        }
+
+        [Authorize(Roles = "admin")]
+        [HttpPatch("{categoryId}")]
+        public async Task<ActionResult> UpdateCategory(
+            int categoryId,
+            JsonPatchDocument<CategoryForUpdateDto> patchDocument)
+        {
+            var categoryEntity = await _productRepository.GetCategoryAsync(categoryId, false);
+
+            if (categoryEntity == null)
             {
                 return NotFound();
             }
 
-            if (includeProducts)
+            var categoryToPatch = _mapper.Map<CategoryForUpdateDto>(categoryEntity);
+
+            patchDocument.ApplyTo(categoryToPatch, ModelState);
+
+            if (!ModelState.IsValid)
             {
-                return Ok(_mapper.Map<CategoryDto>(category));
+                return BadRequest(ModelState);
             }
 
-            return Ok(_mapper.Map<CategoryWithoutProductsDto>(category));
+            if (!TryValidateModel(categoryToPatch))
+            {
+                return BadRequest();
+            }
+
+            _mapper.Map(categoryToPatch, categoryEntity);
+
+            await _productRepository.SaveChangesAsync();
+
+            return NoContent();
         }
     }
 }

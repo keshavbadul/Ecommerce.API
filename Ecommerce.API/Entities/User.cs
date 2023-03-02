@@ -16,7 +16,7 @@ namespace Ecommerce.API.Entities
 		public string UserName { get; set; } = string.Empty;
 
 		[Required]
-		public string? Password { get; set; }
+		public string Password { get; set; } = string.Empty;
 
 		[Required]
 		[DefaultValue("basic")]

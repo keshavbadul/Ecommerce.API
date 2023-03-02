@@ -2,9 +2,11 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AutoMapper;
 using Ecommerce.API.DbContexts;
 using Ecommerce.API.Entities;
 using Ecommerce.API.Models;
+using Ecommerce.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -16,28 +18,32 @@ namespace Ecommerce.API.Controllers
 	public class AuthenticationController : Controller
 	{
         private readonly IConfiguration _configuration;
-		private readonly EcommerceDbContext _context;
+		private readonly IAuthenticationRepository _authRepository;
+		private readonly IMapper _mapper;
 
         public AuthenticationController(IConfiguration configuration,
-			EcommerceDbContext context)
-		{
-			_configuration = configuration ??
-				throw new ArgumentNullException(nameof(configuration));
-			_context = context ??
-				throw new ArgumentException(nameof(context));
-		}
+            IAuthenticationRepository authRepository,
+            IMapper mapper)
+        {
+            _configuration = configuration ??
+                throw new ArgumentNullException(nameof(configuration));
+            _authRepository = authRepository ??
+                throw new ArgumentNullException(nameof(authRepository));
+            _mapper = mapper ??
+				throw new ArgumentNullException(nameof(mapper));
+        }
 
         public class AuthenticationRequestBody
 		{
-			public string? UserName { get; set; }
-			public string? Password { get; set; }
+			public string UserName { get; set; } = string.Empty;
+			public string Password { get; set; } = string.Empty;
 		}
 
 		[HttpPost("authenticate")]
 		public ActionResult<string> Authenticate(
 			AuthenticationRequestBody authenticationRequestBody)
 		{
-			var user = ValidateUserCredentials(
+			var user = _authRepository.ValidateUserCredentials(
 				authenticationRequestBody.UserName,
 				authenticationRequestBody.Password);
 
@@ -72,17 +78,13 @@ namespace Ecommerce.API.Controllers
 			return Ok(tokenToReturn);
 		}
 
-		private User ValidateUserCredentials(string? userName, string? password)
-		{
-			var res = _context.Users.FirstOrDefault(u => u.UserName == userName
-				&& u.Password == password);
-
-			return res;
-		}
-
 		[HttpPost("register")]
-		public ActionResult Register(UserForCreationDto user)
+		public async Task<ActionResult> Register(UserForCreationDto user)
 		{
+			var userEntity = _mapper.Map<Entities.User>(user);
+			_authRepository.CreateUser(userEntity);
+			await _authRepository.SaveChangesAsync();
+
 			return Ok();
 		}
 	}

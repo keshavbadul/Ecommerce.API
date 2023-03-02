@@ -10,7 +10,7 @@ namespace Ecommerce.API.Controllers
 {
 	[ApiController]
 	[Route("api/products")]
-    [Authorize(Roles = "admin")]
+    // [Authorize(Roles = "admin")]
 	public class ProductsController : Controller
 	{
         private readonly IMapper _mapper;
@@ -37,6 +37,7 @@ namespace Ecommerce.API.Controllers
             return Ok(_mapper.Map<IEnumerable<ProductDto>>(products));
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPost("/api/categories/{categoryId}/products")]
         public async Task<ActionResult<ProductDto>> CreateProduct(
             int categoryId, ProductForCreationDto product)
@@ -87,6 +88,7 @@ namespace Ecommerce.API.Controllers
             return Ok(_mapper.Map<ProductDto>(product));
         }
 
+        [Authorize(Roles = "admin")]
         [HttpPatch("{productId}")]
         public async Task<ActionResult<ProductDto>> UpdateProduct(
             int productId,
@@ -118,6 +120,7 @@ namespace Ecommerce.API.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "admin")]
         [HttpDelete("{productId}")]
         public async Task<ActionResult> DeleteProduct(int productId)
         {

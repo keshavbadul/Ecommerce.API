@@ -30,8 +30,13 @@ builder.Services.AddDbContext<EcommerceDbContext>(
     dbContextOptions => dbContextOptions
         .UseMySql(builder.Configuration["ConnectionStrings:EcommerceDBConnectionString"], serverVersion));
 
+builder.Services.AddScoped<IAuthenticationRepository, AuthenticationRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IShoppingCartRepository, ShoppingCartRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+
+builder.Services.AddScoped<IOrderService, OrderService>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -49,21 +54,22 @@ builder.Services.AddAuthentication("Bearer")
                 SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["Authentication:SecretForKey"]))
         };
     });
-// test
+
+builder.Services.AddScoped<AuthorizeUserIdAttribute>();
+
 builder.Services.AddAuthorization(options => 
 {
     options.AddPolicy("AdminPolicy", policy =>
     {
         policy.RequireAuthenticatedUser();
-        // policy.RequireClaim("userRole", "admin");
         policy.RequireRole("admin");
     });
 
-    // options.AddPolicy("UserRecordsPolicy", policy =>
-    // {
-    //     policy.RequireAuthenticatedUser()
-    //         .RequireClaim("userId");
-    // });
+    options.AddPolicy("UserRecordsPolicy", policy =>
+    {
+        policy.RequireAuthenticatedUser()
+            .RequireClaim("userId");
+    });
 });
 
 var app = builder.Build();
